@@ -1,0 +1,9 @@
+1585760870853	Delete element
+1585764264854	Rename package 'io.javabrains.moviecatalogservice.resources'
+1585764288388	Rename type 'CatalogResource'
+1585912729601	Extract method 'getUserRatings'
+1585912919448	Extract method 'getCatalogItem'
+1586008940992	Rename type 'ConfigurationProperties'
+1586020982047	Rename resource 'application.properties'
+1586021050888	Rename resource 'application.yml'
+1586032077388	Copy compilation unit

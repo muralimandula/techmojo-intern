@@ -1,0 +1,126 @@
+package io.javabrains.moviecatalogservice.controllers;
+
+
+import io.javabrains.moviecatalogservice.AttributesProperties;
+import io.javabrains.moviecatalogservice.models.CatalogItem;
+import io.javabrains.moviecatalogservice.models.UserRating;
+import io.javabrains.moviecatalogservice.services.FeignClientService;
+import io.javabrains.moviecatalogservice.services.MovieInfoService;
+import io.javabrains.moviecatalogservice.services.UserRatingsService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.core.env.Environment;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+public class CatalogController {
+
+	@Autowired
+	public DiscoveryClient discoveryClient; // See no.of clients registered/available on eureka server
+    
+    @Autowired
+    MovieInfoService movieInfoService;
+    
+    @Autowired
+    UserRatingsService userRatingsService;
+    
+    @Autowired
+    FeignClientService feignClientService;
+    
+    @Autowired
+    AttributesProperties attributesProperties; // Using CongfigurationProperties, can retrieve fields in application.properties
+    
+    @Autowired
+    Environment env;     // Once application is running, Environment info can be accessed.
+    
+    
+//    @Autowired
+//    WebClient.Builder webClientBuilder;    // Can use web client builder when rest template is deprecated.
+   
+    @GetMapping("/attributes")
+    public String getAttributes() {
+    	return "Profile : " + attributesProperties.getProfile() + "      User : "+ attributesProperties.getUser() + " on port :" + attributesProperties.getPort();
+    }
+    
+    @GetMapping("/env")
+    public String getEnvironmentDetails() {
+    	return  "Active profiles are :" + Arrays.deepToString(env.getActiveProfiles()) + "      Default profiles :" +  Arrays.deepToString(env.getDefaultProfiles());
+    }
+   
+    @GetMapping("/services")
+    public List<String> getLanding( ) {
+//    	return "just a landing page";
+    	return discoveryClient.getServices();
+    }
+    
+    @RequestMapping("/{userId}")
+    public List<CatalogItem> getCatalog(@PathVariable("userId") String userId) {
+    	
+    	UserRating userRating = userRatingsService.getUserRatings(userId);
+    	
+    	return userRating.getRatings().stream()
+	                .map(rating -> movieInfoService.getCatalogItem(rating))
+	                .collect(Collectors.toList());
+    	
+    }
+    
+    @GetMapping("/feign")
+    public String gettingFromFeign() {
+    	return feignClientService.getFromFeign();
+    }
+}
+
+
+
+
+
+
+
+/*
+try {
+    UserRating userRating = restTemplate.getForObject("http://ratings-data-service/ratingsdata/user/" + userId, UserRating.class);
+//	an object with userId, List of ratings (movieId, rating) rated by that user  @ 8082
+
+	log.info("---Microservice on \"ratings-data-service\" working!");
+	
+	
+	try {
+        return userRating.getRatings().stream()
+                .map(rating -> {
+                    Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
+                    
+                    log.info("---Microservice named \"movie-info-service\", working!  retrieved movie info successfully. ");
+                    return new CatalogItem(movie.getName(), movie.getDescription(), rating.getRating());
+                    // Movies, Description and rating of list of movies by a particular userId
+                })
+                .collect(Collectors.toList());
+
+	} catch (Exception e) {
+		// TODO: handle exception
+		log.info("---Microservice on name \"movie-info-service\" not working, exception : " + e);
+		return "Server failed at \"movie-info-service\" ";
+	}
+}catch (Exception e) {
+	// TODO: handle exception
+	log.info("---Microservice on name \"ratings-data-service\" not working, exception : " + e);
+	return "Server failed at \"ratings-data-service\" ";
+}
+*/
+
+/*
+ * Alternative WebClient way instead of a rest template to call a service
+		 
+		
+		Movie movie = webClientBuilder.build()        // Building awebClient that calls
+									  .get().uri("http://localhost:8082/movies/"+ rating.getMovieId()) // calling a service using url
+									  .retrieve().bodyToMono(Movie.class)      // retrieving response as a mono
+									  .block();   							  //  makes it synchronous, wait till done.
+*/
