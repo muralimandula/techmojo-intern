@@ -16,6 +16,7 @@ public class Person {
 	
 	private String height;
 
+	private String address;
 	
 	public Person() {
 		// TODO Auto-generated constructor stub
@@ -25,6 +26,7 @@ public class Person {
 		super();
 		this.name = name;
 		this.height = height;
+		this.address = "gutta";
 	}
 
 	public int getId() {
@@ -50,6 +52,13 @@ public class Person {
 	public void setHeight(String height) {
 		this.height = height;
 	}
-	
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
 	
 }

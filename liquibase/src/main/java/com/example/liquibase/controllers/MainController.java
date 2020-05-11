@@ -19,9 +19,9 @@ public class MainController {
 	
 	@PostMapping("create")
 	public String createPerson(@RequestParam String personName) {
-		System.out.println("---checking " + personName);
-		personRepository.save(new Person(personName, "5.6"));
-		return personName + " saved successfully wiht id, ";
+//		System.out.println("---checking " + personName);
+		int personId = personRepository.save(new Person(personName, "5.6")).getId();
+		return personName + " saved successfully wiht id, " + personId;
 	}
 	
 	@GetMapping("allPersons")
